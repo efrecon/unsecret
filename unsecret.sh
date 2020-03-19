@@ -3,19 +3,50 @@
 set -e
 
 VERBOSE=0
-ROOTDIR=
-ENVSET=
+ROOTDIR=${ROOTDIR:-}
+ENVSET=${ENVSET:-}
 
 
 # Print usage on stderr and exit
 usage() {
-    exitcode="$1"
+    exitcode="${1:-0}"
     cat <<USAGE >&2
 
 Description:
 
-  $0 will read environment variables from files and start
-  a sub-process
+  $0 will read environment variables from files and start a sub-process
+
+Usage:
+  $0 [-option arg --long-option(=)arg] (--) command
+
+  where all dash-led options/flags are as follows (long options can be followed
+  by an equal sign). The command, if present is executed once environment
+  variables have been set.
+
+  Flags:
+    -v | --verbose
+        Be more verbose
+    -h | --help
+        Print this help and exit
+
+  Options:
+    -r | --root | --root(-)dir
+        Root directory under which to locate all files. Default to empty.
+    -e | --env(ironment)
+        Variable specification, see below. Can be repeated several times.
+
+Details:
+
+  Environment variable specifications are composed of the name of a variable,
+  followed by the colon sign, followed by the file location at which to find the
+  value of the variable. When the file path is relative, it will be relative to
+  the root directory, specified through --root. If the root directory, the file
+  will be relative to the current directory.
+
+  The colon and file specification are optional. When they are not present, the
+  script will convert the name of the environment variable to lower case,
+  replace all occurrences of an underscore (_) by a dash (-) and look for a file
+  with that name.
 
 USAGE
     exit "$exitcode"
@@ -35,6 +66,9 @@ while [ $# -gt 0 ]; do
         ENVSET=$(printf '%s\n%s' "$2" "$ENVSET"); shift 2;;
     --env | --environment)
         ENVSET=$(printf '%s\n%s' "${1#*=}" "$ENVSET"); shift 1;;
+
+    -h | --help)
+        usage; shift 1;;
 
     --)
         shift
@@ -83,6 +117,5 @@ done <<EOC
 $ENVSET
 EOC
 
-if [ "$#" != "0" ]; then
-    exec "$@"
-fi
+[ "$#" -gt "0" ] && exec "$@"
+
