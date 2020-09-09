@@ -125,7 +125,7 @@ if [ -n "$UNSECRET_AUTO" ]; then
     while IFS= read -r setter; do
         varname=$(printf %s\\n "$setter"|sed -E 's/([^=]+)=(.*)/\1/'|sed "s/${UNSECRET_AUTO}\$//")
         fpath=$(printf %s\\n "$setter"|sed -E 's/([^=]+)=(.*)/\2/')
-        setvar "$varname" "$fpath"
+        [ -n "$varname" ] && setvar "$varname" "$fpath"
     done <<EOC
 $(env | grep -E ".*${UNSECRET_AUTO}=.*")
 EOC
@@ -136,7 +136,7 @@ while read -r cmd; do
         varname=$(printf %s\\n "$cmd"|awk -F ":" '{print $1}')
         # Path to file is directly specified or comes from name of variable.
         fpath=$(printf %s\\n "$cmd"|awk -F ":" '{print $2}')
-        setvar "$varname" "$fpath"
+        [ -n "$varname" ] && setvar "$varname" "$fpath"
     fi
 done <<EOC
 $UNSECRET_ENVSET
