@@ -2,9 +2,9 @@
 
 set -e
 
-VERBOSE=0
-ROOTDIR=${ROOTDIR:-}
-ENVSET=${ENVSET:-}
+UNSECRET_VERBOSE=${UNSECRET_VERBOSE:-0}
+UNSECRET_ROOTDIR=${UNSECRET_ROOTDIR:-}
+UNSECRET_ENVSET=${UNSECRET_ENVSET:-}
 
 
 # Print usage on stderr and exit
@@ -40,8 +40,8 @@ Details:
   Environment variable specifications are composed of the name of a variable,
   followed by the colon sign, followed by the file location at which to find the
   value of the variable. When the file path is relative, it will be relative to
-  the root directory, specified through --root. If the root directory, the file
-  will be relative to the current directory.
+  the root directory, specified through --root. If the root directory is empty,
+  the file will be relative to the current directory.
 
   The colon and file specification are optional. When they are not present, the
   script will convert the name of the environment variable to lower case,
@@ -55,17 +55,17 @@ USAGE
 while [ $# -gt 0 ]; do
     case "$1" in
     -v | --verbose)
-        VERBOSE=1; shift 1;;
+        UNSECRET_VERBOSE=1; shift 1;;
 
-    -r | --root-dir | --root | --rootdir)
-        ROOTDIR=$2; shift 2;;
-    --root-dir=* | --root=* | --rootdir=*)
-        ROOTDIR="${1#*=}"; shift 1;;
+    -r | --root-dir | --root | --UNSECRET_ROOTDIR)
+        UNSECRET_ROOTDIR=$2; shift 2;;
+    --root-dir=* | --root=* | --UNSECRET_ROOTDIR=*)
+        UNSECRET_ROOTDIR="${1#*=}"; shift 1;;
     
     -e | --env | --environment)
-        ENVSET=$(printf '%s\n%s' "$2" "$ENVSET"); shift 2;;
+        UNSECRET_ENVSET=$(printf '%s\n%s' "$2" "$UNSECRET_ENVSET"); shift 2;;
     --env | --environment)
-        ENVSET=$(printf '%s\n%s' "${1#*=}" "$ENVSET"); shift 1;;
+        UNSECRET_ENVSET=$(printf '%s\n%s' "${1#*=}" "$UNSECRET_ENVSET"); shift 1;;
 
     -h | --help)
         usage; shift 1;;
@@ -91,7 +91,7 @@ warn() {
 }
 
 verbose() {
-    if [ "$VERBOSE" = "1" ]; then printf "%s\n" "$*" 1>&2; fi
+    if [ "$UNSECRET_VERBOSE" = "1" ]; then printf "%s\n" "$*" 1>&2; fi
 }
 
 while read -r cmd; do
@@ -103,10 +103,10 @@ while read -r cmd; do
             fpath=$(printf %s\\n "$varname" | tr '[:upper:]' '[:lower:]' | tr '_' '-')
         fi
         # Relative path from root dir when root dir is not empty.
-        if [ -n "$ROOTDIR" ]; then
+        if [ -n "$UNSECRET_ROOTDIR" ]; then
             firstchar=$(printf %s\\n "$fpath" | cut -c1-1)
             if [ "$firstchar" != "/" ] && [ "$firstchar" != "~" ]; then
-                fpath="${ROOTDIR%%/}/${fpath}"
+                fpath="${UNSECRET_ROOTDIR%%/}/${fpath}"
             fi
         fi
         value=$(cat "$fpath")
@@ -114,7 +114,7 @@ while read -r cmd; do
         export "${varname}=${value}"
     fi
 done <<EOC
-$ENVSET
+$UNSECRET_ENVSET
 EOC
 
 [ "$#" -gt "0" ] && exec "$@"
