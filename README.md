@@ -1,6 +1,6 @@
 # unsecret
 
-Unsecret is an inverted wrapper: It will arrange to set the value of one or
+`unsecret` is an inverted wrapper: It will arrange to set the value of one or
 several environment variables from the content of files before starting a
 program. This is useful when you have a Docker image that can only be configured
 using environment variables, but you wish to transmit settings (secrets?) to the
@@ -20,4 +20,14 @@ of environment variables printed out at the console.
 ./unsecret.sh -e MY_TEST -- env
 ```
 
-For more details, run the script with `--help`.
+And to detect all environment variables ending with `_FILE` and create, for
+each, a variable without the `_FILE` ending but with the content of the file
+pointed at by the variable ending with `_FILE`, run the following command:
+
+```shell
+./unsecret.sh -a _FILE --env
+```
+
+For more details, run the script with `--help`, the script can be controlled by
+command-line options, or environment variables, all starting with `UNSECRET_`.
+Command-line options have precedence over the environment variables.
