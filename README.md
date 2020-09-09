@@ -25,7 +25,7 @@ each, a variable without the `_FILE` ending but with the content of the file
 pointed at by the variable ending with `_FILE`, run the following command:
 
 ```shell
-./unsecret.sh -a _FILE --env
+./unsecret.sh -a _FILE
 ```
 
 For more details, run the script with `--help`, the script can be controlled by
