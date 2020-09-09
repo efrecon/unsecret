@@ -122,7 +122,7 @@ setvar() {
 }
 
 if [ -n "$UNSECRET_AUTO" ]; then
-    while read -r setter; do
+    while IFS= read -r setter; do
         varname=$(printf %s\\n "$setter"|sed -E 's/([^=]+)=(.*)/\1/'|sed "s/${UNSECRET_AUTO}\$//")
         fpath=$(printf %s\\n "$setter"|sed -E 's/([^=]+)=(.*)/\2/')
         setvar "$varname" "$fpath"
